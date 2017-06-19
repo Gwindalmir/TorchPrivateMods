@@ -39,9 +39,10 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                 MySandboxGame.Log.WriteLineAndConsole(string.Format(Constants.ERROR_Reflection, "IsModUpToDateBlocking"));
         }
 
-        /// <summary>
-        /// Do NOT call this method from update thread.
-        /// </summary>
+        // NOTE: This method (DownloadWorldModsBlocking) is from Space Engineers, and is copyrighted by Keen.
+        // Therefore, it is *NOT* subject to the repository license.
+        // I have only made some changes.
+        // The original is located here: https://github.com/KeenSoftwareHouse/SpaceEngineers/blob/master/Sources/Sandbox.Game/Engine/Networking/MySteamWorkshop.cs#L1326
         public static ResultData DownloadWorldModsBlocking(List<MyObjectBuilder_Checkpoint.ModItem> mods)
         {
             ResultData ret = new ResultData();
