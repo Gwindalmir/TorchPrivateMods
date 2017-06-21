@@ -5,12 +5,15 @@ using Sandbox.Game.Gui;
 using SteamSDK;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using VRage;
 using VRage.FileSystem;
 using VRage.Game;
@@ -51,6 +54,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
             {
                 return ret;
             }
+            bool sewtDownloaded = false;
 
             MySandboxGame.Log.WriteLine("Downloading world mods - START");
             MySandboxGame.Log.IncreaseIndent();
@@ -79,6 +83,12 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                             return new ResultData();
                         }
                     }
+                }
+
+                // Download mods with SEWT
+                if( PrivateModsPlugin.Instance.AlwaysUseSteamCMD)
+                {
+                    sewtDownloaded = DownloadModsExternally(publishedFileIds);
                 }
 
                 // Check if the world doesn't contain duplicate mods, if it does, log it and remove the duplicate entry
@@ -187,6 +197,10 @@ namespace Phoenix.Torch.Plugin.PrivateMods
 
                                         if (itemResult != Result.OK)
                                         {
+                                            // Try to download with SEWT
+                                            if (!sewtDownloaded)
+                                                DownloadModsExternally(new List<ulong>() { publishedFileId });
+
                                             var fullPath = Path.Combine(MyFileSystem.ModsPath, publishedFileId.ToString() + ".sbm");
                                             MySandboxGame.Log.WriteLineAndConsole(string.Format("Failed to download mod: id = {0}, result = {1}", publishedFileId, itemResult));
                                             if (PrivateModsPlugin.Instance.ContinueOnDownloadError && File.Exists(fullPath))
@@ -354,6 +368,103 @@ namespace Phoenix.Torch.Plugin.PrivateMods
             MySandboxGame.Log.DecreaseIndent();
             MySandboxGame.Log.WriteLine("Downloading world mods - END");
             return ret;
+        }
+
+        /// <summary>
+        /// Downloads mods externally, with SEWT
+        /// </summary>
+        /// <param name="mods"></param>
+        public static bool DownloadModsExternally(List<ulong> mods)
+        {
+            if (string.IsNullOrEmpty(PrivateModsPlugin.Instance.PathToSteamCMD) || !File.Exists(PrivateModsPlugin.Instance.PathToSteamCMD))
+                return false;
+            var dir = Path.GetDirectoryName(PrivateModsPlugin.Instance.PathToSteamCMD);
+            var script = Path.Combine(dir, "privatemods_script.txt");
+            File.WriteAllLines(script,
+                                new string[] {
+                                    $"login {PrivateModsPlugin.Instance.SteamUsername}",
+                                    "force_install_dir ..\\ ",
+                                    "workshop_download_item 244850 " + string.Join(Environment.NewLine + "workshop_download_item 244850 ", mods),
+                                    "quit"
+                                }
+                                );
+
+            var steamcmd = new ProcessStartInfo(PrivateModsPlugin.Instance.PathToSteamCMD, $"+runscript \"{script}\"")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                StandardOutputEncoding = Encoding.ASCII,
+                UseShellExecute = false,
+                WorkingDirectory = Path.GetDirectoryName(PrivateModsPlugin.Instance.PathToSteamCMD)
+            };
+
+            var regex = new Regex("^Success\\. Downloaded item ([0-9]+) to \"(.+)\"");
+
+            Debug.WriteLine(steamcmd);
+            var cmd = Process.Start(steamcmd);
+            cmd.StandardInput.AutoFlush = true;
+            for (;;)
+            {
+                if (!cmd.StandardOutput.EndOfStream)
+                {
+                    var line = cmd.StandardOutput.ReadLine();
+
+                    // Steam *may* prompt for a password, if this is the first login, or cached credentials are lost
+                    // The actual prompt is 'password: ', but since that line doens't have a CRLF (due to prompt), it's not available yet.
+                    if (line.StartsWith("Logging in user"))
+                    {
+                        // TODO: Maybe make this more secure, by reading the contents manually and passing directly to Stdin.
+                        cmd.StandardInput.WriteLine(PrivateModsPlugin.Instance.SteamPassword.GetString());
+                        MySandboxGame.Log.WriteLineAndConsole(line);
+                    }
+                    else if (line == "Enter the current code from your Steam Guard Mobile Authenticator app")
+                    {
+                        PrivateModsPlugin.Log.Log(NLog.LogLevel.Info, line);
+                        string code = string.Empty;
+
+                        PrivateModsPlugin.Instance.InputBox.Dispatcher.Invoke(() =>
+                        {
+                            if (PrivateModsPlugin.Instance.InputBox.ShowDialog() == true && !string.IsNullOrEmpty(PrivateModsPlugin.Instance.InputBox.InputText))
+                            {
+                                code = PrivateModsPlugin.Instance.InputBox.InputText;
+                            }
+                        });
+                        cmd.StandardInput.WriteLine(code);
+                    }
+                    else if(line.StartsWith("Success. Downloaded item "))
+                    {
+                        var matches = regex.Matches(line);
+                        if( matches.Count == 1 && matches[0].Groups.Count == 3)
+                        {
+                            var id = matches[0].Groups[1].Value;
+                            var path = matches[0].Groups[2].Value;
+
+                            // File was downloaded, copy it to the session mod location
+                            File.Copy(path, Path.Combine(PrivateModsPlugin.Instance.Torch.Config.InstancePath, "Mods", $"{id}.sbm"), true);
+                        }
+                        MySandboxGame.Log.WriteLineAndConsole(line);
+                    }
+                    else
+                    {
+                        MySandboxGame.Log.WriteLineAndConsole(line);
+                    }
+                }
+                if( !cmd.StandardError.EndOfStream )
+                    MySandboxGame.Log.WriteLineAndConsole(cmd.StandardError.ReadLine());
+
+                if (cmd.HasExited && cmd.StandardOutput.EndOfStream && cmd.StandardOutput.EndOfStream)
+                    break;
+
+                Thread.Sleep(100);
+            }
+
+            File.Delete(script);
+
+            if (cmd.ExitCode == 0)
+                return true;
+
+            return false;
         }
     }
 }

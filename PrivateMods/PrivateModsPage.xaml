@@ -1,0 +1,72 @@
+﻿<UserControl x:Class="Phoenix.Torch.Plugin.PrivateMods.PrivateModsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Phoenix.Torch.Plugin.PrivateMods"
+             mc:Ignorable="d" 
+             d:DesignHeight="350">
+    <Grid>
+        <Grid.Background>
+            <SolidColorBrush Color="WhiteSmoke"/>
+        </Grid.Background>
+            <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Continue on error if mod already present" ToolTip="If selected, the server will continue to start up, even if mods could not be downloaded, as long as they are present. Use this with caution, as this can cause clients to be out of sync with servers." IsChecked="{Binding ContinueOnDownloadError}"/>
+        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Always use SteamCMD to download mods" ToolTip="If selected, SteamCMD will be used to download all the mods, even public ones. If unselected, SteamCMD will only be called for mods that failed to be downloaded normally by the server." IsChecked="{Binding AlwaysUseSteamCMD}"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="SteamCMD location:"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Name="pathTextBox" Text="{Binding PathToSteamCMD, Mode=TwoWay}"/>
+        <Button Grid.Row="2" Grid.Column="2" Margin="5" Content="Browse..." Click="Browse_Click" />
+
+        <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="5"/>
+        <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+            <TextBlock TextWrapping="Wrap">
+                If you supply login credentials for Steam, they will be saved (encrypted), and will be supplied if needed to SteamCMD.
+                <LineBreak/>
+                If you are not comfortable supplying your credentials here, you can execute "steamcmd +login &lt;username&gt; +quit" to cache the credentials.
+                <LineBreak/>
+                The simply provide just your username.
+            </TextBlock>
+        </Label>
+
+        <Label Grid.Row="5" Grid.Column="0" Margin="5" Content="Steam Username:"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Margin="5" Text="{Binding SteamUsername}"/>
+
+        <Label Grid.Row="6" Grid.Column="0" Margin="5" Content="Steam Password:"/>
+        <PasswordBox Grid.Row="6" Grid.Column="1" Margin="5" PasswordChanged="PasswordBox_PasswordChanged"/>
+        <Label Grid.Row="6" Grid.Column="2" Margin="5">
+            <Label.Style>
+                <Style TargetType="Label">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasPassword}" Value="True">
+                            <Setter Property="Content" Value="Set!"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+        <Label Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+            <TextBlock TextWrapping="Wrap">
+                NOTE: 2-Factor Login
+                <LineBreak/>
+                Accounts with 2-Factor authentication enabled (eg. mobile authenticator) requires additional input during first-time startup. This prompt will block startup until the mobile app code is entered.
+                <LineBreak/>
+                Due to an issue in Torch, you must select this plugin, and open this page immediately after clicking "Start", before the session starts to load. Otherwise the input prompt will not appear, and login will be rejected.
+            </TextBlock>
+        </Label>
+    </Grid>
+</UserControl>
