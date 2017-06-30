@@ -110,6 +110,7 @@
   <ItemGroup>
     <Content Include="manifest.xml">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
