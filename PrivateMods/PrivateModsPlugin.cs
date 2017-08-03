@@ -167,7 +167,9 @@ namespace Phoenix.Torch.Plugin.PrivateMods
             Settings.Data.ContinueOnError = ContinueOnDownloadError;
             Settings.Data.SteamCMDPath = PathToSteamCMD;
             Settings.Data.SteamUsername = SteamUsername;
-            Settings.Data.EncryptedSteamPassword = Encryption.AESThenHMAC.SimpleEncryptWithPassword(SteamPassword.GetString(), GetEncryptionKey());
+
+            if (SteamPassword?.Length > 0)
+                Settings.Data.EncryptedSteamPassword = Encryption.AESThenHMAC.SimpleEncryptWithPassword(SteamPassword.GetString(), GetEncryptionKey());
 
             Settings.Save(Constants.SettingsFilename);
         }

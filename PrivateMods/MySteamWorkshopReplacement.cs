@@ -68,7 +68,13 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                 {
                     if (mod.PublishedFileId != 0)
                     {
-                        publishedFileIds.Add(mod.PublishedFileId);
+                        // Check for, and get information on, collections
+                        var list = WorkshopTool.WorkshopHelper.GetCollectionDetails(mod.PublishedFileId);
+
+                        if (list?.Count() > 0)
+                            list?.ForEach(i => publishedFileIds.Add(i.PublishedFileId));
+                        else
+                            publishedFileIds.Add(mod.PublishedFileId);
                     }
                     else if (MySandboxGame.IsDedicated)
                     {
