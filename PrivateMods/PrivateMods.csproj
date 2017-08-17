@@ -42,24 +42,24 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Sandbox.Common">
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\Sandbox.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sandbox.Game">
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\Sandbox.Game.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sandbox.Graphics">
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\Sandbox.Graphics.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\Sandbox.Graphics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SpaceEngineers.Game">
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\SpaceEngineers.Game.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\SpaceEngineers.Game.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SteamSDK, Version=0.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\SteamSDK.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\SteamSDK.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -81,15 +81,19 @@
     </Reference>
     <Reference Include="UIAutomationProvider" />
     <Reference Include="VRage">
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\VRage.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\VRage.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VRage.Game">
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\VRage.Game.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\VRage.Game.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VRage.Library">
-      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\Bin64\VRage.Library.dll</HintPath>
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\VRage.Library.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VRage.Steam">
+      <HintPath>D:\Program Files\Steam\SteamApps\common\SpaceEngineers\DedicatedServer64\VRage.Steam.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="WindowsBase" />

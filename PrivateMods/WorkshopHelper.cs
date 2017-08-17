@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VRage;
 using VRage.FileSystem;
+using VRage.Steam;
 using VRage.Utils;
 using MySubscribedItem = Sandbox.Engine.Networking.MySteamWorkshop.SubscribedItem;
 
@@ -17,6 +18,8 @@ namespace Phoenix.WorkshopTool
 {
     class WorkshopHelper
     {
+        static MySteamService MySteam { get => (MySteamService)MyServiceManager.Instance.GetService<VRage.GameServices.IMyGameService>(); }
+
         static private Dictionary<uint, Action<bool, string>> m_callbacks = new Dictionary<uint, Action<bool, string>>();
 
         public static MySubscribedItem GetSubscribedItem(ulong modid)

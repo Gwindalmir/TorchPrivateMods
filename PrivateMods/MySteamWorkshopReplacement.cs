@@ -17,12 +17,14 @@ using System.Windows;
 using VRage;
 using VRage.FileSystem;
 using VRage.Game;
+using VRage.Steam;
 using static Sandbox.Engine.Networking.MySteamWorkshop;
 
 namespace Phoenix.Torch.Plugin.PrivateMods
 {
     class MySteamWorkshopReplacement
     {
+        static MySteamService MySteam { get => (MySteamService)MyServiceManager.Instance.GetService<VRage.GameServices.IMyGameService>(); }
         static MethodInfo isModUpToDateBlockingMethod;
         static FieldInfo asyncDownloadScreenField;
         static FieldInfo stopField;                 // This is volatile, not sure if this works with reflection properly
@@ -137,8 +139,8 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                         while (!mrEvent.WaitOne(17))
                         {
                             mrEvent.Reset();
-                            if (MySteam.Server != null)
-                                MySteam.Server.RunCallbacks();
+                            if (MySteam.SteamServerAPI?.GameServer != null)
+                                MySteam.SteamServerAPI.GameServer.RunCallbacks();
                             else
                             {
                                 MySandboxGame.Log.WriteLine("Steam server API unavailable");
@@ -302,8 +304,8 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                                         while (!mrEvent.WaitOne(17))
                                         {
                                             mrEvent.Reset();
-                                            if (MySteam.Server != null)
-                                                MySteam.Server.RunCallbacks();
+                                            if (MySteam.SteamServerAPI?.GameServer != null)
+                                                MySteam.SteamServerAPI?.GameServer.RunCallbacks();
                                             else
                                             {
                                                 MySandboxGame.Log.WriteLine("Steam server API unavailable");
@@ -472,5 +474,115 @@ namespace Phoenix.Torch.Plugin.PrivateMods
 
             return false;
         }
+
+        #region From SE
+        private static readonly string m_workshopModsPath = MyFileSystem.ModsPath;
+        private static readonly string m_workshopModSuffix = ".sbm";
+
+        public static bool DownloadModFromURLStream(string url, ulong publishedFileId, Action<bool> callback)
+        {
+            uint handle = HTTP.CreateHTTPRequest(HTTPMethod.GET, url);
+            if (handle == 0)
+            {
+                callback(false);
+                return false;
+            }
+
+            if (!HTTP.SetHTTPRequestContextValue(handle, publishedFileId))
+            {
+                MySandboxGame.Log.WriteLine(string.Format("HTTP: could not set context value = {0}", publishedFileId));
+                callback(false);
+                return false;
+            }
+
+            var localPackedModFullPath = Path.Combine(MyFileSystem.ModsPath, publishedFileId.ToString() + m_workshopModSuffix);
+
+            var fs = File.OpenWrite(localPackedModFullPath);
+
+            DataReceived onDataRecieved = delegate (HTTPRequestDataReceived data)
+            {
+                if (data.ContextValue != publishedFileId)
+                    return;
+
+                var buffer = new byte[data.BytesReceived];
+                HTTP.GetHTTPStreamingResponseBodyData(data.Request, data.Offset, buffer, data.BytesReceived);
+                fs.Write(buffer, 0, (int)data.BytesReceived);
+            };
+
+            HTTP.DataReceived += onDataRecieved;
+
+            if (!HTTP.SendHTTPRequestAndStreamResponse(handle, delegate (bool ioFailure, HTTPRequestCompleted data)
+            {
+                HTTP.DataReceived -= onDataRecieved;
+                var success = !ioFailure && data.RequestSuccessful && data.StatusCode == HTTPStatusCode.OK;
+                if (success)
+                {
+                    MySandboxGame.Log.WriteLine(string.Format("HTTP: Downloaded mod publishedFileId = {0}, size = {1}B to: '{2}' url: '{3}'", publishedFileId, fs.Length, localPackedModFullPath, url));
+                }
+                else
+                {
+                    MySandboxGame.Log.WriteLine(string.Format("HTTP: Error downloading file: Id = {0}, status = {1}, url = '{2}'", publishedFileId, data.StatusCode, url));
+                }
+                fs.Dispose();
+                callback(success);
+            }))
+            {
+                MySandboxGame.Log.WriteLine(string.Format("HTTP: could not send HTTP request url = '{0}'", url));
+                callback(false);
+                return false;
+            }
+            return true;
+        }
+
+        public static bool DownloadModFromURL(string url, ulong publishedFileId, Action<bool> callback)
+        {
+            uint handle = HTTP.CreateHTTPRequest(HTTPMethod.GET, url);
+            if (handle == 0)
+                return false;
+            bool success = false;
+            uint dataSize = 0;
+
+            if (!HTTP.SendHTTPRequest(handle, delegate (bool ioFailure, HTTPRequestCompleted data)
+            {
+                if (!ioFailure && data.RequestSuccessful && data.StatusCode == HTTPStatusCode.OK)
+                {
+                    var localPackedModFullPath = Path.Combine(m_workshopModsPath, publishedFileId + m_workshopModSuffix);
+                    if (HTTP.GetHTTPResponseBodySize(data.Request, out dataSize))
+                    {
+                        var bodyData = new byte[dataSize];
+                        if (HTTP.GetHTTPResponseBodyData(data.Request, bodyData, dataSize))
+                        {
+                            try
+                            {
+                                File.WriteAllBytes(localPackedModFullPath, bodyData);
+                                success = true;
+                                MySandboxGame.Log.WriteLine(string.Format("HTTP: Downloaded mod publishedFileId = {0}, size = {1} bytes to: '{2}' from: '{3}'", publishedFileId, dataSize, localPackedModFullPath, url));
+                            }
+                            catch (Exception e)
+                            {
+                                MySandboxGame.Log.WriteLine(string.Format("HTTP: failed to write data {0} bytes to file = '{1}', error: {2}", dataSize, localPackedModFullPath, e));
+                            }
+                        }
+                        else
+                        {
+                            MySandboxGame.Log.WriteLine(string.Format("HTTP: failed to read response body data, size = {0}", dataSize));
+                        }
+                    }
+                    else
+                    {
+                        MySandboxGame.Log.WriteLine("HTTP: failed to read response body size");
+                    }
+                }
+                else
+                {
+                    MySandboxGame.Log.WriteLine(string.Format("HTTP: error {0}", data.StatusCode));
+                }
+                callback(success);
+            }))
+                return false;
+            return true;
+        }
+        #endregion
+
     }
 }
