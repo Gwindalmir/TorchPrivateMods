@@ -17,7 +17,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="dest">The dest.</param>
-        public static void ReplaceMethod(MethodBase source, MethodBase dest)
+        public static void ReplaceMethod(MethodBase source, MethodBase dest, bool useDebug = false)
         {
             if (!MethodSignaturesEqual(source, dest))
             {
@@ -32,34 +32,42 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                 {
                     long* inj = (long*)dest.MethodHandle.Value.ToPointer() + 1;
                     long* tar = (long*)source.MethodHandle.Value.ToPointer() + 1;
-#if DEBUG
-                    byte* injInst = (byte*)*inj;
-                    byte* tarInst = (byte*)*tar;
+
+                    if (useDebug)
+                    {
+                        byte* injInst = (byte*)*inj;
+                        byte* tarInst = (byte*)*tar;
 
 
-                    int* injSrc = (int*)(injInst + 1);
-                    int* tarSrc = (int*)(tarInst + 1);
+                        int* injSrc = (int*)(injInst + 1);
+                        int* tarSrc = (int*)(tarInst + 1);
 
-                    *tarSrc = (((int)injInst + 5) + *injSrc) - ((int)tarInst + 5);
-#else
-                    *tar = *inj;
-#endif
+                        *tarSrc = (((int)injInst + 5) + *injSrc) - ((int)tarInst + 5);
+                    }
+                    else
+                    {
+                        *tar = *inj;
+                    }
                 }
                 else
                 {
                     int* inj = (int*)dest.MethodHandle.Value.ToPointer() + 2;
                     int* tar = (int*)source.MethodHandle.Value.ToPointer() + 2;
-#if DEBUG
-                    byte* injInst = (byte*)*inj;
-                    byte* tarInst = (byte*)*tar;
 
-                    int* injSrc = (int*)(injInst + 1);
-                    int* tarSrc = (int*)(tarInst + 1);
+                    if (useDebug)
+                    {
+                        byte* injInst = (byte*)*inj;
+                        byte* tarInst = (byte*)*tar;
 
-                    *tarSrc = (((int)injInst + 5) + *injSrc) - ((int)tarInst + 5);
-#else
-                    *tar = *inj;
-#endif
+                        int* injSrc = (int*)(injInst + 1);
+                        int* tarSrc = (int*)(tarInst + 1);
+
+                        *tarSrc = (((int)injInst + 5) + *injSrc) - ((int)tarInst + 5);
+                    }
+                    else
+                    {
+                        *tar = *inj;
+                    }
                 }
             }
         }

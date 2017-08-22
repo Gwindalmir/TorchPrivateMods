@@ -123,10 +123,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
-
-#if !DEBUG
             InjectMethod();
-#endif
 
             // Load existing settings
             Settings = Persistent<Settings>.Load(Path.Combine(StoragePath, Constants.SettingsFilename));
@@ -143,11 +140,6 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                 SteamPassword = new SecureString().SetString(Encryption.AESThenHMAC.SimpleDecryptWithPassword(Settings.Data.EncryptedSteamPassword, GetEncryptionKey()));
 
             torch.SessionUnloaded += () => SaveSettings();
-
-#if DEBUG
-            // Debug only code
-            MySteamWorkshopReplacement.DownloadModsExternally(new List<ulong>() { 377773977 });
-#endif
         }
 
         private string GetEncryptionKey()
@@ -214,8 +206,10 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                     methodtoreplace = null;
             }
 
+            var sourceIsDebug = typeof(MySteamWorkshop).Assembly.GetCustomAttributes(false).OfType<System.Diagnostics.DebuggableAttribute>().Select(da => da.IsJITTrackingEnabled).FirstOrDefault();
+
             if (methodtoreplace != null && methodtoinject != null)
-                MethodUtil.ReplaceMethod(methodtoreplace, methodtoinject);
+                MethodUtil.ReplaceMethod(methodtoreplace, methodtoinject, sourceIsDebug && Constants.IsDebug);
             else
                 MySandboxGame.Log.WriteLineAndConsole(string.Format(Constants.ERROR_Reflection, "DownloadWorldModsBlocking"));
         }
