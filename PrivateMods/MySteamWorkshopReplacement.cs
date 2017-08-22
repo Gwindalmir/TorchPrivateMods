@@ -50,6 +50,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
         // The original is located here: https://github.com/KeenSoftwareHouse/SpaceEngineers/blob/master/Sources/Sandbox.Game/Engine/Networking/MySteamWorkshop.cs#L1326
         public static ResultData DownloadWorldModsBlocking(List<MyObjectBuilder_Checkpoint.ModItem> mods)
         {
+            var collectionMods = new List<MyObjectBuilder_Checkpoint.ModItem>();
             ResultData ret = new ResultData();
             ret.Success = true;
             if (!MyFakes.ENABLE_WORKSHOP_MODS)
@@ -74,7 +75,11 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                         var list = WorkshopTool.WorkshopHelper.GetCollectionDetails(mod.PublishedFileId);
 
                         if (list?.Count() > 0)
-                            list?.ForEach(i => publishedFileIds.Add(i.PublishedFileId));
+                            list?.ForEach(i =>
+                                    {
+                                        publishedFileIds.Add(i.PublishedFileId);
+                                        collectionMods.Add(new MyObjectBuilder_Checkpoint.ModItem(i.PublishedFileId));
+                                    });
                         else
                             publishedFileIds.Add(mod.PublishedFileId);
                     }
@@ -99,6 +104,15 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                     sewtDownloaded = DownloadModsExternally(publishedFileIds);
                 }
 
+                collectionMods.ForEach(m =>
+                {
+                    // This is probably slow, but we need to check if the mod we're processing wasn't already added previously.
+                    // This is to prevent duplicates from piling on when processing collections.
+                    if (mods.Where(i => i.PublishedFileId == m.PublishedFileId).Count() == 0)
+                        mods.Add(m);
+                });
+
+
                 // Check if the world doesn't contain duplicate mods, if it does, log it and remove the duplicate entry
                 publishedFileIds.Sort();
                 for (int i = 0; i < publishedFileIds.Count - 1;)
@@ -107,7 +121,8 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                     ulong id2 = publishedFileIds[i + 1];
                     if (id1 == id2)
                     {
-                        MySandboxGame.Log.WriteLine(string.Format("Duplicate mod entry for id: {0}", id1));
+                        if(collectionMods.Where((m) => m.PublishedFileId == id1).Count() == 0)
+                            MySandboxGame.Log.WriteLine(string.Format("Duplicate mod entry for id: {0}", id1));
                         publishedFileIds.RemoveAt(i + 1);
                     }
                     else
@@ -115,6 +130,8 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                         i++;
                     }
                 }
+
+                collectionMods.Clear();
 
                 if (MySandboxGame.IsDedicated)
                 {
