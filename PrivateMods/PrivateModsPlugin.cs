@@ -22,7 +22,7 @@ using VRage.Utils;
 
 namespace Phoenix.Torch.Plugin.PrivateMods
 {
-    [Plugin("Private Mods", "1.0", "AA4988CB-7693-46AA-B3FA-219A28653256")]
+    [Plugin("Private Mods", Constants.Version, "AA4988CB-7693-46AA-B3FA-219A28653256")]
     public class PrivateModsPlugin : TorchPluginBase, INotifyPropertyChanged, IWpfPlugin
     {
         public static PrivateModsPlugin Instance { get; private set; }
