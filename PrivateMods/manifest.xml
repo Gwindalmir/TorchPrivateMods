@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Private Mods</Name>
   <Repository>Phoenix84/TorchPrivateMods</Repository>
-  <Version>1.1.2</Version>
+  <Guid>AA4988CB-7693-46AA-B3FA-219A28653256</Guid>
+  <Version>1.1.3</Version>
 </PluginManifest>
