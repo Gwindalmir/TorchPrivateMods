@@ -153,7 +153,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
             return password;
         }
 
-        private void SaveSettings()
+        public void SaveSettings()
         {
             Settings.Data.AlwaysUseSteamCMD = AlwaysUseSteamCMD;
             Settings.Data.ContinueOnError = ContinueOnDownloadError;
@@ -163,7 +163,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
             if (SteamPassword?.Length > 0)
                 Settings.Data.EncryptedSteamPassword = Encryption.AESThenHMAC.SimpleEncryptWithPassword(SteamPassword.GetString(), GetEncryptionKey());
 
-            Settings.Save(Constants.SettingsFilename);
+            Settings.Save();
         }
 
         public override void Dispose()
