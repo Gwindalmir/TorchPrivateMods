@@ -24,16 +24,19 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Continue on error if mod already present" ToolTip="If selected, the server will continue to start up, even if mods could not be downloaded, as long as they are present. Use this with caution, as this can cause clients to be out of sync with servers." IsChecked="{Binding ContinueOnDownloadError}"/>
-        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Always use SteamCMD to download mods" ToolTip="If selected, SteamCMD will be used to download all the mods, even public ones. If unselected, SteamCMD will only be called for mods that failed to be downloaded normally by the server." IsChecked="{Binding AlwaysUseSteamCMD}"/>
+        <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Use Keen Workshop Code (CAUTION, only change if you know what you are doing.)" ToolTip="If unselected, Keen's DS code to download workshop mods will be completely bypassed. This will force DS to load only mods that already exist. This is similar to MyFakes.ENABLE_WORKSHOP_MODS." IsChecked="{Binding UseKeenWorkshopCode}"/>
+        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Continue on error if mod already present" ToolTip="If selected, the server will continue to start up, even if mods could not be downloaded, as long as they are present. Use this with caution, as this can cause clients to be out of sync with servers." IsChecked="{Binding ContinueOnDownloadError}" IsEnabled="{Binding UseKeenWorkshopCode}"/>
+        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Always use SteamCMD to download mods" ToolTip="If selected, SteamCMD will be used to download all the mods, even public ones. If unselected, SteamCMD will only be called for mods that failed to be downloaded normally by the server." IsChecked="{Binding AlwaysUseSteamCMD}" IsEnabled="{Binding UseKeenWorkshopCode}"/>
 
-        <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="SteamCMD location:"/>
-        <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Name="pathTextBox" Text="{Binding PathToSteamCMD, Mode=TwoWay}"/>
-        <Button Grid.Row="2" Grid.Column="2" Margin="5" Content="Browse..." Click="Browse_Click" />
+        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="SteamCMD location:"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Margin="5" Name="pathTextBox" Text="{Binding PathToSteamCMD, Mode=TwoWay}"/>
+        <Button Grid.Row="3" Grid.Column="2" Margin="5" Content="Browse..." Click="Browse_Click" />
 
-        <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="5"/>
-        <Label Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+        <Separator Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="5"/>
+        <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
             <TextBlock TextWrapping="Wrap">
                 If you supply login credentials for Steam, they will be saved (encrypted), and will be supplied if needed to SteamCMD.
                 <LineBreak/>
@@ -43,12 +46,12 @@
             </TextBlock>
         </Label>
 
-        <Label Grid.Row="5" Grid.Column="0" Margin="5" Content="Steam Username:"/>
-        <TextBox Grid.Row="5" Grid.Column="1" Margin="5" Text="{Binding SteamUsername}"/>
+        <Label Grid.Row="6" Grid.Column="0" Margin="5" Content="Steam Username:"/>
+        <TextBox Grid.Row="6" Grid.Column="1" Margin="5" Text="{Binding SteamUsername}"/>
 
-        <Label Grid.Row="6" Grid.Column="0" Margin="5" Content="Steam Password:"/>
-        <PasswordBox Grid.Row="6" Grid.Column="1" Margin="5" PasswordChanged="PasswordBox_PasswordChanged"/>
-        <Label Grid.Row="6" Grid.Column="2" Margin="5">
+        <Label Grid.Row="7" Grid.Column="0" Margin="5" Content="Steam Password:"/>
+        <PasswordBox Grid.Row="7" Grid.Column="1" Margin="5" PasswordChanged="PasswordBox_PasswordChanged"/>
+        <Label Grid.Row="7" Grid.Column="2" Margin="5">
             <Label.Style>
                 <Style TargetType="Label">
                     <Style.Triggers>
@@ -59,7 +62,7 @@
                 </Style>
             </Label.Style>
         </Label>
-        <Label Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+        <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
             <TextBlock TextWrapping="Wrap">
                 NOTE: 2-Factor Login
                 <LineBreak/>
@@ -68,5 +71,6 @@
                 Due to an issue in Torch, you must select this plugin, and open this page immediately after clicking "Start", before the session starts to load. Otherwise the input prompt will not appear, and login will be rejected.
             </TextBlock>
         </Label>
+        <Button Grid.Row="9" Content="Save" Click="Save_Click"/>
     </Grid>
 </UserControl>

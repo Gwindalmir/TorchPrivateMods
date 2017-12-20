@@ -29,6 +29,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
         public Persistent<Settings> Settings { get; private set; }
 
         bool m_continueOnDownloadError = true;
+        bool m_useKeenWorkshopCode = true;
         bool m_alwaysUseSteamCMD = true;
         string m_pathToSteamCMD;
         string m_steamUsername;
@@ -37,6 +38,26 @@ namespace Phoenix.Torch.Plugin.PrivateMods
         public static readonly Logger Log = LogManager.GetLogger("PrivateMods");
 
         #region WPF Properties
+        public bool UseKeenWorkshopCode
+        {
+            get { return m_useKeenWorkshopCode; }
+            set
+            {
+                if (value != m_useKeenWorkshopCode)
+                {
+                    m_useKeenWorkshopCode = value;
+                    RaisePropertyChanged();
+
+                    Sandbox.Engine.Utils.MyFakes.ENABLE_WORKSHOP_MODS = m_useKeenWorkshopCode;
+                    if (!m_useKeenWorkshopCode)
+                    {
+                        AlwaysUseSteamCMD = true;
+                        ContinueOnDownloadError = true;
+                    }
+                }
+            }
+        }
+
         public bool ContinueOnDownloadError
         {
             get { return m_continueOnDownloadError; }
@@ -128,6 +149,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
             Settings = Persistent<Settings>.Load(Path.Combine(StoragePath, Constants.SettingsFilename));
             ContinueOnDownloadError = Settings.Data.ContinueOnError;
             PathToSteamCMD = Settings.Data.SteamCMDPath;
+            Sandbox.Engine.Utils.MyFakes.ENABLE_WORKSHOP_MODS = UseKeenWorkshopCode = Settings.Data.UseKeenWorkshopCode;
 
             if (string.IsNullOrEmpty(PathToSteamCMD))
                 PathToSteamCMD = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + Path.DirectorySeparatorChar + "steamcmd" + Path.DirectorySeparatorChar + "steamcmd.exe";
@@ -154,6 +176,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
 
         public void SaveSettings()
         {
+            Settings.Data.UseKeenWorkshopCode = UseKeenWorkshopCode;
             Settings.Data.AlwaysUseSteamCMD = AlwaysUseSteamCMD;
             Settings.Data.ContinueOnError = ContinueOnDownloadError;
             Settings.Data.SteamCMDPath = PathToSteamCMD;

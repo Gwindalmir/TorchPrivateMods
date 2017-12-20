@@ -52,5 +52,10 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                 pathTextBox.Text = dialog.FileName;
             }
         }
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            ((PrivateModsPlugin)this.DataContext).SaveSettings();
+        }
     }
 }

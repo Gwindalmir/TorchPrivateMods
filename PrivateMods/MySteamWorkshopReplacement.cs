@@ -53,7 +53,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
             var collectionMods = new List<MyObjectBuilder_Checkpoint.ModItem>();
             ResultData ret = new ResultData();
             ret.Success = true;
-            if (!MyFakes.ENABLE_WORKSHOP_MODS)
+            if (!MyFakes.ENABLE_WORKSHOP_MODS && !PrivateModsPlugin.Instance.AlwaysUseSteamCMD)
             {
                 return ret;
             }
@@ -98,7 +98,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                     }
                 }
 
-                // Download mods with SEWT
+                // Download mods with steamcmd
                 if( PrivateModsPlugin.Instance.AlwaysUseSteamCMD)
                 {
                     sewtDownloaded = DownloadModsExternally(publishedFileIds);
@@ -259,8 +259,12 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                                         reader.ReadToFollowing("file_size");
                                         long fileSize = reader.ReadElementContentAsLong();
 
-                                        reader.ReadToFollowing("file_url");
-                                        string url = reader.ReadElementContentAsString();
+                                        string url = null;
+                                        if (MyFakes.ENABLE_WORKSHOP_MODS)
+                                        {
+                                            reader.ReadToFollowing("file_url");
+                                            url = reader.ReadElementContentAsString();
+                                        }
 
                                         reader.ReadToFollowing("title");
                                         string title = reader.ReadElementContentAsString();
@@ -279,55 +283,58 @@ namespace Phoenix.Torch.Plugin.PrivateMods
 
                                         var mod = new SubscribedItem() { Title = title, PublishedFileId = publishedFileId, TimeUpdated = timeUpdated };
 
-                                        if ((bool)isModUpToDateBlockingMethod?.Invoke(null, new object[] { Path.Combine(MyFileSystem.ModsPath, publishedFileId.ToString() + ".sbm"), mod, false, fileSize }))
+                                        if (MyFakes.ENABLE_WORKSHOP_MODS)
                                         {
-                                            MySandboxGame.Log.WriteLineAndConsole(string.Format("Up to date mod:  id = {0}", publishedFileId));
-                                            continue;
-                                        }
-
-                                        MySandboxGame.Log.WriteLineAndConsole(string.Format("Downloading mod: id = {0}, size = {1,8:0.000} MiB", publishedFileId, (double)fileSize / 1024f / 1024f));
-
-                                        if (fileSize > 10 * 1024 * 1024) // WTF Steam
-                                        {
-                                            if (!DownloadModFromURLStream(url, publishedFileId, delegate (bool success)
+                                            if ((bool)isModUpToDateBlockingMethod?.Invoke(null, new object[] { Path.Combine(MyFileSystem.ModsPath, publishedFileId.ToString() + ".sbm"), mod, false, fileSize }))
                                             {
-                                                if (!success)
-                                                {
-                                                    MySandboxGame.Log.WriteLineAndConsole(string.Format("Could not download mod: id = {0}, url = {1}", publishedFileId, url));
-                                                }
-                                                mrEvent.Set();
-                                            }))
-                                            {
-                                                ret.Success = false;
-                                                break;
+                                                MySandboxGame.Log.WriteLineAndConsole(string.Format("Up to date mod:  id = {0}", publishedFileId));
+                                                continue;
                                             }
-                                        }
-                                        else
-                                        {
-                                            if (!DownloadModFromURL(url, publishedFileId, delegate (bool success)
-                                            {
-                                                if (!success)
-                                                {
-                                                    MySandboxGame.Log.WriteLineAndConsole(string.Format("Could not download mod: id = {0}, url = {1}", publishedFileId, url));
-                                                }
-                                                mrEvent.Set();
-                                            }))
-                                            {
-                                                ret.Success = false;
-                                                break;
-                                            }
-                                        }
 
-                                        while (!mrEvent.WaitOne(17))
-                                        {
-                                            mrEvent.Reset();
-                                            if (MySteam.SteamServerAPI?.GameServer != null)
-                                                MySteam.SteamServerAPI?.GameServer.RunCallbacks();
+                                            MySandboxGame.Log.WriteLineAndConsole(string.Format("Downloading mod: id = {0}, size = {1,8:0.000} MiB", publishedFileId, (double)fileSize / 1024f / 1024f));
+
+                                            if (fileSize > 10 * 1024 * 1024) // WTF Steam
+                                            {
+                                                if (!DownloadModFromURLStream(url, publishedFileId, delegate (bool success)
+                                                {
+                                                    if (!success)
+                                                    {
+                                                        MySandboxGame.Log.WriteLineAndConsole(string.Format("Could not download mod: id = {0}, url = {1}", publishedFileId, url));
+                                                    }
+                                                    mrEvent.Set();
+                                                }))
+                                                {
+                                                    ret.Success = false;
+                                                    break;
+                                                }
+                                            }
                                             else
                                             {
-                                                MySandboxGame.Log.WriteLine("Steam server API unavailable");
-                                                ret.Success = false;
-                                                break;
+                                                if (!DownloadModFromURL(url, publishedFileId, delegate (bool success)
+                                                {
+                                                    if (!success)
+                                                    {
+                                                        MySandboxGame.Log.WriteLineAndConsole(string.Format("Could not download mod: id = {0}, url = {1}", publishedFileId, url));
+                                                    }
+                                                    mrEvent.Set();
+                                                }))
+                                                {
+                                                    ret.Success = false;
+                                                    break;
+                                                }
+                                            }
+
+                                            while (!mrEvent.WaitOne(17))
+                                            {
+                                                mrEvent.Reset();
+                                                if (MySteam.SteamServerAPI?.GameServer != null)
+                                                    MySteam.SteamServerAPI?.GameServer.RunCallbacks();
+                                                else
+                                                {
+                                                    MySandboxGame.Log.WriteLine("Steam server API unavailable");
+                                                    ret.Success = false;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }

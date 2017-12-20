@@ -10,6 +10,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
 {
     public class Settings
     {
+        public bool UseKeenWorkshopCode = true;
         public bool ContinueOnError = true;
         public bool AlwaysUseSteamCMD = false;
         public string SteamCMDPath;
