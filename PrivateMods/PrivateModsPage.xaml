@@ -5,8 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Phoenix.Torch.Plugin.PrivateMods"
              mc:Ignorable="d" 
-             d:DesignHeight="350">
-    <Grid>
+             d:DesignHeight="500" d:DesignWidth="600">
+    <Grid Margin="0,0,0,10">
         <Grid.Background>
             <SolidColorBrush Color="WhiteSmoke"/>
         </Grid.Background>
@@ -26,32 +26,35 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Use Keen Workshop Code (CAUTION, only change if you know what you are doing.)" ToolTip="If unselected, Keen's DS code to download workshop mods will be completely bypassed. This will force DS to load only mods that already exist. This is similar to MyFakes.ENABLE_WORKSHOP_MODS." IsChecked="{Binding UseKeenWorkshopCode}"/>
         <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Continue on error if mod already present" ToolTip="If selected, the server will continue to start up, even if mods could not be downloaded, as long as they are present. Use this with caution, as this can cause clients to be out of sync with servers." IsChecked="{Binding ContinueOnDownloadError}" IsEnabled="{Binding UseKeenWorkshopCode}"/>
         <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Content="Always use SteamCMD to download mods" ToolTip="If selected, SteamCMD will be used to download all the mods, even public ones. If unselected, SteamCMD will only be called for mods that failed to be downloaded normally by the server." IsChecked="{Binding AlwaysUseSteamCMD}" IsEnabled="{Binding UseKeenWorkshopCode}"/>
+        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Visibility="Collapsed" Content="Allow local mods" ToolTip="If selected, local only mods will be loaded (non-workshop). Note these mods will be present on the server only, and will not be sent to clients." IsChecked="{Binding AllowLocalMods}" IsEnabled="{Binding UseKeenWorkshopCode}"/>
 
-        <Label Grid.Row="3" Grid.Column="0" Margin="5" Content="SteamCMD location:"/>
-        <TextBox Grid.Row="3" Grid.Column="1" Margin="5" Name="pathTextBox" Text="{Binding PathToSteamCMD, Mode=TwoWay}"/>
-        <Button Grid.Row="3" Grid.Column="2" Margin="5" Content="Browse..." Click="Browse_Click" />
+        <Label Grid.Row="4" Grid.Column="0" Margin="5" Content="SteamCMD location:"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Margin="5" Name="pathTextBox" Text="{Binding PathToSteamCMD, Mode=TwoWay}"/>
+        <Button Grid.Row="4" Grid.Column="2" Margin="5" Content="Browse..." Click="Browse_Click" />
 
-        <Separator Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="5"/>
-        <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+        <Separator Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="5"/>
+        <Label Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
             <TextBlock TextWrapping="Wrap">
                 If you supply login credentials for Steam, they will be saved (encrypted), and will be supplied if needed to SteamCMD.
                 <LineBreak/>
                 If you are not comfortable supplying your credentials here, you can execute "steamcmd +login &lt;username&gt; +quit" to cache the credentials.
                 <LineBreak/>
-                The simply provide just your username.
+                Then simply provide just your username.
             </TextBlock>
         </Label>
 
-        <Label Grid.Row="6" Grid.Column="0" Margin="5" Content="Steam Username:"/>
-        <TextBox Grid.Row="6" Grid.Column="1" Margin="5" Text="{Binding SteamUsername}"/>
+        <Label Grid.Row="7" Grid.Column="0" Margin="5" Content="Steam Username:"/>
+        <TextBox Grid.Row="7" Grid.Column="1" Margin="5" Text="{Binding SteamUsername}"/>
 
-        <Label Grid.Row="7" Grid.Column="0" Margin="5" Content="Steam Password:"/>
-        <PasswordBox Grid.Row="7" Grid.Column="1" Margin="5" PasswordChanged="PasswordBox_PasswordChanged"/>
-        <Label Grid.Row="7" Grid.Column="2" Margin="5">
+        <Label Grid.Row="8" Grid.Column="0" Margin="5" Content="Steam Password:"/>
+        <PasswordBox Grid.Row="8" Grid.Column="1" Margin="5" PasswordChanged="PasswordBox_PasswordChanged"/>
+        <Label Grid.Row="8" Grid.Column="2" Margin="5">
             <Label.Style>
                 <Style TargetType="Label">
                     <Style.Triggers>
@@ -62,15 +65,49 @@
                 </Style>
             </Label.Style>
         </Label>
-        <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+        <Label Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
             <TextBlock TextWrapping="Wrap">
                 NOTE: 2-Factor Login
                 <LineBreak/>
                 Accounts with 2-Factor authentication enabled (eg. mobile authenticator) requires additional input during first-time startup. This prompt will block startup until the mobile app code is entered.
                 <LineBreak/>
-                Due to an issue in Torch, you must select this plugin, and open this page immediately after clicking "Start", before the session starts to load. Otherwise the input prompt will not appear, and login will be rejected.
+                <LineBreak/>
+                WARNING: SteamGuard via email will NOT work. You must use the Mobile Authenticator with this UI. If you use the email version, execute steamcmd manually, as listed below.
             </TextBlock>
         </Label>
-        <Button Grid.Row="9" Content="Save" Click="Save_Click"/>
+        <Label Grid.Row="10" Grid.Column="0" Margin="5" Content="Example command:"/>
+        <TextBox Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="2" Margin="5" IsReadOnly="True" TextWrapping="Wrap">
+            <TextBox.ToolTip>
+                <TextBlock>
+                    This is the command you can run to cache the login credentials manually, instead of entering your password here.
+                    <LineBreak/>
+                    You can copy this and paste it in a command window or the Run dialog.
+                </TextBlock>
+            </TextBox.ToolTip>
+            <TextBox.Style>
+                <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                    <Setter Property="Text">
+                        <Setter.Value>
+                            <MultiBinding StringFormat="{}&quot;{0}&quot; +login {1} +quit">
+                                <Binding Path="PathToSteamCMD" FallbackValue="steamcmd.exe"/>
+                                <Binding Path="SteamUsername"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=PathToSteamCMD.Length, FallbackValue=0, TargetNullValue=0}" Value="0">
+                            <Setter Property="Text">
+                                <Setter.Value>
+                                    <MultiBinding StringFormat="{}steamcmd.exe +login {0} +quit">
+                                        <Binding Path="SteamUsername"/>
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
+        <Button Grid.Row="11" Content="Save" Click="Save_Click"/>
     </Grid>
 </UserControl>

@@ -87,7 +87,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                     {
                         if (PrivateModsPlugin.Instance.AllowLocalMods)
                         {
-                            MySandboxGame.Log.WriteLineAndConsole("Local mods being allowed by OfflineMod plugin.");
+                            MySandboxGame.Log.WriteLineAndConsole("Local mods being allowed by PrivateMod plugin.");
                         }
                         else
                         {
@@ -235,7 +235,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
                                                     var localTimeUpdated = File.GetLastWriteTimeUtc(fullPath);
                                                     MySandboxGame.Log.IncreaseIndent();
                                                     MySandboxGame.Log.WriteLineAndConsole(string.Format("Found existing download: size = {0,8:0.000} MiB, last modified = {1}", file.Length / 1024f / 1024f, localTimeUpdated));
-                                                    MySandboxGame.Log.WriteLineAndConsole("Continuing due to OfflineMod plugin.");
+                                                    MySandboxGame.Log.WriteLineAndConsole("Continuing due to PrivateMod plugin.");
                                                     MySandboxGame.Log.DecreaseIndent();
                                                 }
                                             }
