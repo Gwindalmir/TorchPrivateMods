@@ -25,7 +25,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
     public class PrivateModsPlugin : TorchPluginBase, INotifyPropertyChanged, IWpfPlugin
     {
         public static PrivateModsPlugin Instance { get; private set; }
-        public bool AllowLocalMods { get; private set; }        // This doesn't work, due to longs in mod list
+        public bool AllowLocalMods { get; set; } = false;        // This doesn't work, due to longs in mod list
         public Persistent<Settings> Settings { get; private set; }
 
         bool m_continueOnDownloadError = true;
@@ -143,7 +143,7 @@ namespace Phoenix.Torch.Plugin.PrivateMods
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
-            InjectMethod();
+            torch.GameStateChanged += Torch_GameStateChanged;
 
             // Load existing settings
             Settings = Persistent<Settings>.Load(Path.Combine(StoragePath, Constants.SettingsFilename));
@@ -159,8 +159,19 @@ namespace Phoenix.Torch.Plugin.PrivateMods
 
             if ( !string.IsNullOrEmpty(Settings.Data.EncryptedSteamPassword))
                 SteamPassword = new SecureString().SetString(Encryption.AESThenHMAC.SimpleDecryptWithPassword(Settings.Data.EncryptedSteamPassword, GetEncryptionKey()));
+        }
 
-            torch.SessionUnloaded += () => SaveSettings();
+        private void Torch_GameStateChanged(MySandboxGame game, TorchGameState newState)
+        {
+            switch(newState)
+            {
+                case TorchGameState.Creating:
+                    InjectMethod();
+                    break;
+                case TorchGameState.Unloading:
+                    SaveSettings();
+                    break;
+            }
         }
 
         private string GetEncryptionKey()
